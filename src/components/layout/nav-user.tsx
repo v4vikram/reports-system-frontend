@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuthStore } from "@/features/auth";
+import { useAuthStore, useLogout } from "@/features/auth";
 
 function getInitials(name: string) {
   return name
@@ -33,11 +33,12 @@ export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const reset = useAuthStore((state) => state.reset);
+  const logout = useLogout();
 
   const handleLogout = () => {
-    reset();
-    router.push("/login");
+    logout.mutate(undefined, {
+      onSuccess: () => router.push("/login"),
+    });
   };
 
   return (
