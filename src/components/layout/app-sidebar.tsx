@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboardIcon } from "lucide-react";
+import { FolderTreeIcon, LayoutDashboardIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/components/layout/nav-user";
@@ -23,6 +23,11 @@ const navItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboardIcon,
+  },
+  {
+    title: "Categories",
+    url: "/dashboard/categories",
+    icon: FolderTreeIcon,
   },
 ];
 
