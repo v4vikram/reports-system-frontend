@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderTreeIcon, LayoutDashboardIcon } from "lucide-react";
+import { ContactIcon, FolderTreeIcon, LayoutDashboardIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/components/layout/nav-user";
@@ -17,6 +17,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useAuthStore } from "@/features/auth";
+import { USER_VIEW_PERMISSIONS } from "@/features/employee";
 
 const navItems = [
   {
@@ -29,10 +31,26 @@ const navItems = [
     url: "/dashboard/categories",
     icon: FolderTreeIcon,
   },
+  {
+    title: "Clients",
+    url: "/dashboard/clients",
+    icon: ContactIcon,
+  },
+  {
+    title: "Employees",
+    url: "/dashboard/employees",
+    icon: UsersIcon,
+    // Any one of these is enough to see the nav item at all.
+    anyPermission: USER_VIEW_PERMISSIONS,
+  },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const visibleNavItems = navItems.filter(
+    (item) => !item.anyPermission || item.anyPermission.some((key) => hasPermission(key))
+  );
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -60,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     tooltip={item.title}
