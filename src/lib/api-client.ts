@@ -1,3 +1,4 @@
+import axios, { isAxiosError, type AxiosRequestConfig, type InternalAxiosRequestConfig } from "axios";
 import { env } from "./env";
 import type { ApiErrorBody, ApiSuccessBody } from "@/types/api";
 
@@ -12,47 +13,90 @@ export class ApiClientError extends Error {
   }
 }
 
-interface RequestOptions extends Omit<RequestInit, "body"> {
-  body?: unknown;
+type RequestConfig = Omit<AxiosRequestConfig, "url" | "method" | "data">;
+
+interface RetryableConfig extends InternalAxiosRequestConfig {
+  _retried?: boolean;
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { body, headers, ...rest } = options;
+const REFRESH_PATH = "/api/auth/refresh";
 
-  const res = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, {
-    ...rest,
-    credentials: "include",
-    headers: {
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-      ...headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+// 401s from these are a real "wrong credentials" failure, never a stale
+// access token — retrying them via refresh would be pointless.
+const NO_REFRESH_RETRY_PATHS = new Set([REFRESH_PATH, "/api/auth/login", "/api/auth/register"]);
 
-  const isJson = res.headers.get("content-type")?.includes("application/json");
-  const payload = isJson ? await res.json() : undefined;
+const http = axios.create({
+  baseURL: env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
+});
 
-  if (!res.ok) {
-    const errorBody = payload as ApiErrorBody | undefined;
+// The backend's refresh-token rotation revokes the whole session if a
+// token gets presented twice (reuse = treated as theft). If several
+// requests 401 at once, they must share a single refresh call rather than
+// each firing their own — otherwise the second call could hand the
+// already-rotated token back to the server and get every session killed.
+let refreshPromise: Promise<boolean> | null = null;
+
+function refreshSession(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = http
+      .post(REFRESH_PATH)
+      .then(() => true)
+      .catch(() => false)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
+http.interceptors.response.use(
+  (response) => response,
+  async (error: unknown) => {
+    if (!isAxiosError<ApiErrorBody>(error)) {
+      throw error;
+    }
+
+    const config = error.config as RetryableConfig | undefined;
+
+    if (
+      error.response?.status === 401 &&
+      config &&
+      !config._retried &&
+      !NO_REFRESH_RETRY_PATHS.has(config.url ?? "")
+    ) {
+      const refreshed = await refreshSession();
+      if (refreshed) {
+        config._retried = true;
+        return http.request(config);
+      }
+    }
+
     throw new ApiClientError(
-      res.status,
-      errorBody?.message ?? res.statusText,
-      errorBody?.details
+      error.response?.status ?? 0,
+      error.response?.data?.message ?? error.message,
+      error.response?.data?.details
     );
   }
+);
 
-  return (payload as ApiSuccessBody<T> | undefined)?.data as T;
+async function request<T>(
+  path: string,
+  method: string,
+  data?: unknown,
+  config?: RequestConfig
+): Promise<T> {
+  const res = await http.request<ApiSuccessBody<T>>({ ...config, url: path, method, data });
+  return res.data.data;
 }
 
 export const apiClient = {
-  get: <T>(path: string, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "GET" }),
-  post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "POST", body }),
-  patch: <T>(path: string, body?: unknown, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "PATCH", body }),
-  put: <T>(path: string, body?: unknown, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "PUT", body }),
-  delete: <T>(path: string, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "DELETE" }),
+  get: <T>(path: string, config?: RequestConfig) => request<T>(path, "GET", undefined, config),
+  post: <T>(path: string, body?: unknown, config?: RequestConfig) =>
+    request<T>(path, "POST", body, config),
+  patch: <T>(path: string, body?: unknown, config?: RequestConfig) =>
+    request<T>(path, "PATCH", body, config),
+  put: <T>(path: string, body?: unknown, config?: RequestConfig) =>
+    request<T>(path, "PUT", body, config),
+  delete: <T>(path: string, config?: RequestConfig) => request<T>(path, "DELETE", undefined, config),
 };
