@@ -9,4 +9,6 @@ export interface AuthUser {
   email: string;
   roles: Role[];
   permissions: string[];
+  // The Client.id this user is the portal login for, if any.
+  portalClientId: string | null;
 }

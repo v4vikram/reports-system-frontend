@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,11 @@ export function ClientTable({ clients }: { clients: Client[] }) {
         <TableBody>
           {clients.map((client) => (
             <TableRow key={client.id}>
-              <TableCell>{client.name}</TableCell>
+              <TableCell>
+                <Link href={`/dashboard/clients/${client.id}`} className="font-medium hover:underline">
+                  {client.name}
+                </Link>
+              </TableCell>
               <TableCell className="text-muted-foreground">{client.company ?? "—"}</TableCell>
               <TableCell className="text-muted-foreground">
                 {client.email ?? client.phone ?? "—"}

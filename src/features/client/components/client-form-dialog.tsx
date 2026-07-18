@@ -83,8 +83,16 @@ export function ClientForm({
       address: client?.address ?? null,
       notes: client?.notes ?? null,
       assignedUserId: client?.assignedUserId ?? null,
+      portalUserId: client?.portalUserId ?? null,
     },
   });
+
+  // Existing CLIENT-role accounts, for the portal-login picker. A client's
+  // portal login is a distinct account from the employee managing them, so
+  // only users who already hold the CLIENT role are eligible.
+  const portalCandidates = employees?.filter((employee) =>
+    employee.roles.some((role) => role.name === "CLIENT")
+  );
 
   function onSubmit(values: ClientFormValues) {
     const mutation = isEditing
@@ -220,6 +228,37 @@ export function ClientForm({
                     ))}
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {canSeeEmployees && (
+          <FormField
+            control={form.control}
+            name="portalUserId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Portal login (optional)</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="No portal access" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={null}>No portal access</SelectItem>
+                    {portalCandidates?.map((employee) => (
+                      <SelectItem key={employee.id} value={employee.id}>
+                        {employee.name} ({employee.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Links an existing CLIENT-role account so this client can log in and see their own
+                  events/reports. Remember to also grant that account clients:read/reports:read.
+                </p>
                 <FormMessage />
               </FormItem>
             )}

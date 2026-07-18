@@ -2,6 +2,7 @@ export * from "./types";
 export * from "./constants";
 export * from "./validation";
 export * from "./api/client.api";
+export * from "./hooks/use-client";
 export * from "./hooks/use-clients";
 export * from "./hooks/use-create-client";
 export * from "./hooks/use-update-client";

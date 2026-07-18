@@ -1,6 +1,13 @@
 "use client";
 
-import { ContactIcon, FolderTreeIcon, LayoutDashboardIcon, UserCogIcon, UsersIcon } from "lucide-react";
+import {
+  ContactIcon,
+  FileTextIcon,
+  FolderTreeIcon,
+  LayoutDashboardIcon,
+  UserCogIcon,
+  UsersIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/components/layout/nav-user";
@@ -21,6 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useHasPermission } from "@/features/auth";
 import { USER_VIEW_PERMISSIONS } from "@/features/employee";
+import { REPORT_VIEW_PERMISSIONS } from "@/features/report";
 
 const navItems = [
   {
@@ -53,6 +61,12 @@ const navItems = [
     url: "/dashboard/categories",
     icon: FolderTreeIcon,
     anyPermission: [CATEGORY_PERMISSIONS.CATEGORIES_READ],
+  },
+  {
+    title: "Reports",
+    url: "/dashboard/reports",
+    icon: FileTextIcon,
+    anyPermission: REPORT_VIEW_PERMISSIONS,
   },
 ];
 

@@ -8,6 +8,7 @@ export const clientSchema = z.object({
   address: z.string().max(500).nullable(),
   notes: z.string().max(2000).nullable(),
   assignedUserId: z.string().nullable(),
+  portalUserId: z.string().nullable(),
 });
 
 export type ClientFormValues = z.infer<typeof clientSchema>;

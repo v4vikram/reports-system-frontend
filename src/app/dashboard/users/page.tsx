@@ -18,11 +18,13 @@ import { useAuthStore, useHasPermission } from "@/features/auth";
 import {
   type Client,
   ClientFormDialog,
+  DeleteClientDialog,
   PERMISSIONS as CLIENT_PERMISSIONS,
   useClients,
 } from "@/features/client";
 import {
   CreateRoleDialog,
+  DeleteEmployeeDialog,
   EditEmployeeDialog,
   type Employee,
   PERMISSIONS as EMPLOYEE_PERMISSIONS,
@@ -52,6 +54,7 @@ const TYPE_BADGE: Record<DirectoryType, "default" | "secondary" | "outline"> = {
 
 export default function UsersPage() {
   const status = useAuthStore((state) => state.status);
+  const currentUserId = useAuthStore((state) => state.user?.id);
   const hasPermission = useHasPermission();
 
   const canViewEmployees = USER_VIEW_PERMISSIONS.some((key) => hasPermission(key));
@@ -60,8 +63,10 @@ export default function UsersPage() {
   const canCreateClient = hasPermission(CLIENT_PERMISSIONS.CLIENTS_CREATE);
   const canUpdateUser = hasPermission(EMPLOYEE_PERMISSIONS.USERS_UPDATE);
   const canUpdateClient = hasPermission(CLIENT_PERMISSIONS.CLIENTS_UPDATE);
+  const canDeleteUser = hasPermission(EMPLOYEE_PERMISSIONS.USERS_DELETE);
+  const canDeleteClient = hasPermission(CLIENT_PERMISSIONS.CLIENTS_DELETE);
   const canCreateAny = canCreateEmployee || canCreateClient;
-  const canEditAny = canUpdateUser || canUpdateClient;
+  const canEditAny = canUpdateUser || canUpdateClient || canDeleteUser || canDeleteClient;
   const authResolved = status === "authenticated" || status === "unauthenticated";
 
   const { data: employees, isLoading: employeesLoading } = useEmployees({ enabled: canViewEmployees });
@@ -71,6 +76,8 @@ export default function UsersPage() {
   const [createRoleOpen, setCreateRoleOpen] = useState(false);
   const [editUser, setEditUser] = useState<Employee | null>(null);
   const [editClient, setEditClient] = useState<Client | null>(null);
+  const [deleteUser, setDeleteUser] = useState<Employee | null>(null);
+  const [deleteClient, setDeleteClient] = useState<Client | null>(null);
 
   // Managing roles is an admin-level action, gated the same as creating users.
   const canManageRoles = canCreateEmployee;
@@ -119,6 +126,10 @@ export default function UsersPage() {
     return row.kind === "user" ? canUpdateUser : canUpdateClient;
   }
 
+  function canDeleteRow(row: DirectoryRow) {
+    return row.kind === "user" ? canDeleteUser : canDeleteClient;
+  }
+
   function openEdit(row: DirectoryRow) {
     if (row.kind === "user") {
       const target = employees?.find((employee) => employee.id === row.id);
@@ -126,6 +137,16 @@ export default function UsersPage() {
     } else {
       const target = clients?.find((client) => client.id === row.id);
       if (target) setEditClient(target);
+    }
+  }
+
+  function openDelete(row: DirectoryRow) {
+    if (row.kind === "user") {
+      const target = employees?.find((employee) => employee.id === row.id);
+      if (target) setDeleteUser(target);
+    } else {
+      const target = clients?.find((client) => client.id === row.id);
+      if (target) setDeleteClient(target);
     }
   }
 
@@ -207,11 +228,28 @@ export default function UsersPage() {
                   </TableCell>
                   {canEditAny && (
                     <TableCell className="text-right">
-                      {canEditRow(row) && (
-                        <Button variant="outline" size="sm" onClick={() => openEdit(row)}>
-                          Edit
-                        </Button>
-                      )}
+                      <div className="flex justify-end gap-2">
+                        {canEditRow(row) && (
+                          <Button variant="outline" size="sm" onClick={() => openEdit(row)}>
+                            Edit
+                          </Button>
+                        )}
+                        {canDeleteRow(row) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={row.kind === "user" && row.id === currentUserId}
+                            title={
+                              row.kind === "user" && row.id === currentUserId
+                                ? "You can't delete your own account"
+                                : undefined
+                            }
+                            onClick={() => openDelete(row)}
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   )}
                 </TableRow>
@@ -232,6 +270,16 @@ export default function UsersPage() {
         open={!!editClient}
         onOpenChange={(open) => !open && setEditClient(null)}
         client={editClient ?? undefined}
+      />
+      <DeleteEmployeeDialog
+        open={!!deleteUser}
+        onOpenChange={(open) => !open && setDeleteUser(null)}
+        employee={deleteUser}
+      />
+      <DeleteClientDialog
+        open={!!deleteClient}
+        onOpenChange={(open) => !open && setDeleteClient(null)}
+        client={deleteClient}
       />
     </Card>
   );
