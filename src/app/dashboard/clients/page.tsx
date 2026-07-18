@@ -6,23 +6,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClientFormDialog, ClientTable, PERMISSIONS, useClients } from "@/features/client";
-import { useAuthStore } from "@/features/auth";
+import { useHasPermission } from "@/features/auth";
 
 export default function ClientsPage() {
-  const { data: clients, isLoading } = useClients();
-  const hasPermission = useAuthStore((state) => state.hasPermission);
-  const canViewAll = hasPermission(PERMISSIONS.CLIENTS_VIEW_ALL);
+  const hasPermission = useHasPermission();
+  const canView = hasPermission(PERMISSIONS.CLIENTS_READ);
   const canCreate = hasPermission(PERMISSIONS.CLIENTS_CREATE);
+  const { data: clients, isLoading } = useClients({ enabled: canView });
   const [createOpen, setCreateOpen] = useState(false);
+
+  if (!canView) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Clients</CardTitle>
+          <CardDescription>You don&apos;t have permission to view this page.</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between">
         <div>
           <CardTitle>Clients</CardTitle>
-          <CardDescription>
-            {canViewAll ? "Every client, and who it's assigned to." : "Clients assigned to you."}
-          </CardDescription>
+          <CardDescription>Every client, and who it&apos;s assigned to.</CardDescription>
         </div>
         {canCreate && (
           <Button size="sm" onClick={() => setCreateOpen(true)}>

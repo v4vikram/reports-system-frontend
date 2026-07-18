@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuthStore } from "@/features/auth";
+import { useHasPermission } from "@/features/auth";
 import {
   buildCategoryTree,
   CategoryFormDialog,
@@ -17,8 +17,10 @@ import {
 } from "@/features/category";
 
 export default function CategoriesPage() {
-  const { data: categories, isLoading } = useCategories();
-  const canManage = useAuthStore((state) => state.hasPermission(PERMISSIONS.CATEGORIES_MANAGE));
+  const hasPermission = useHasPermission();
+  const canView = hasPermission(PERMISSIONS.CATEGORIES_READ);
+  const canManage = hasPermission(PERMISSIONS.CATEGORIES_MANAGE);
+  const { data: categories, isLoading } = useCategories({ enabled: canView });
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
@@ -43,6 +45,17 @@ export default function CategoriesPage() {
   }
 
   const tree = categories ? buildCategoryTree(categories) : [];
+
+  if (!canView) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Categories</CardTitle>
+          <CardDescription>You don&apos;t have permission to view this page.</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <div className="grid gap-4">

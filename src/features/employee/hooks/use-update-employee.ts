@@ -8,8 +8,8 @@ export function useUpdateEmployee() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      employeeApi.update(id, { isActive }),
+    mutationFn: ({ id, ...input }: { id: string; name?: string; email?: string; isActive?: boolean }) =>
+      employeeApi.update(id, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EMPLOYEES_QUERY_KEY });
     },

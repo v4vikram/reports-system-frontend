@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAuthStore } from "@/features/auth";
+import { useHasPermission } from "@/features/auth";
 import { USER_VIEW_PERMISSIONS, useEmployees } from "@/features/employee";
 import { PERMISSIONS } from "../constants";
 import type { Client } from "../types";
@@ -12,7 +12,7 @@ import { ClientFormDialog } from "./client-form-dialog";
 import { DeleteClientDialog } from "./delete-client-dialog";
 
 export function ClientTable({ clients }: { clients: Client[] }) {
-  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const hasPermission = useHasPermission();
   const canUpdate = hasPermission(PERMISSIONS.CLIENTS_UPDATE);
   const canDelete = hasPermission(PERMISSIONS.CLIENTS_DELETE);
   const canSeeEmployees = USER_VIEW_PERMISSIONS.some((key) => hasPermission(key));

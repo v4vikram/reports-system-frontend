@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuthStore } from "@/features/auth";
+import { useAuthStore, useHasPermission } from "@/features/auth";
 import {
   CreateEmployeeDialog,
   EmployeeTable,
@@ -16,7 +16,7 @@ import {
 
 export default function EmployeesPage() {
   const status = useAuthStore((state) => state.status);
-  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const hasPermission = useHasPermission();
   const canView = USER_VIEW_PERMISSIONS.some((key) => hasPermission(key));
   const canCreate = hasPermission(PERMISSIONS.USERS_CREATE);
   const authResolved = status === "authenticated" || status === "unauthenticated";

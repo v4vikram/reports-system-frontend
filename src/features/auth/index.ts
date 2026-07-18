@@ -3,6 +3,7 @@ export * from "./constants";
 export * from "./validation";
 export * from "./store/auth-store";
 export * from "./api/auth.api";
+export * from "./hooks/use-authz";
 export * from "./hooks/use-current-user";
 export * from "./hooks/use-login";
 export * from "./hooks/use-register";

@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuthStore } from "@/features/auth";
+import { useHasPermission } from "@/features/auth";
 import { USER_VIEW_PERMISSIONS, useEmployees } from "@/features/employee";
 import { useCreateClient } from "../hooks/use-create-client";
 import { useUpdateClient } from "../hooks/use-update-client";
@@ -55,7 +55,9 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
   );
 }
 
-function ClientForm({
+// Reusable form body for creating/editing a client. Exported so the unified
+// "Create user" dialog can render it alongside the employee form.
+export function ClientForm({
   client,
   onOpenChange,
 }: {
@@ -67,7 +69,7 @@ function ClientForm({
   const isEditing = !!client;
   const isPending = createClient.isPending || updateClient.isPending;
 
-  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const hasPermission = useHasPermission();
   const canSeeEmployees = USER_VIEW_PERMISSIONS.some((key) => hasPermission(key));
   const { data: employees } = useEmployees({ enabled: canSeeEmployees });
 

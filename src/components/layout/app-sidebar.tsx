@@ -1,9 +1,11 @@
 "use client";
 
-import { ContactIcon, FolderTreeIcon, LayoutDashboardIcon, UsersIcon } from "lucide-react";
+import { ContactIcon, FolderTreeIcon, LayoutDashboardIcon, UserCogIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/components/layout/nav-user";
+import { PERMISSIONS as CATEGORY_PERMISSIONS } from "@/features/category";
+import { PERMISSIONS as CLIENT_PERMISSIONS } from "@/features/client";
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +19,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useAuthStore } from "@/features/auth";
+import { useHasPermission } from "@/features/auth";
 import { USER_VIEW_PERMISSIONS } from "@/features/employee";
 
 const navItems = [
@@ -27,14 +29,11 @@ const navItems = [
     icon: LayoutDashboardIcon,
   },
   {
-    title: "Categories",
-    url: "/dashboard/categories",
-    icon: FolderTreeIcon,
-  },
-  {
-    title: "Clients",
-    url: "/dashboard/clients",
-    icon: ContactIcon,
+    title: "Users",
+    url: "/dashboard/users",
+    icon: UserCogIcon,
+    // The users directory is an admin view — only user-managers see it.
+    anyPermission: USER_VIEW_PERMISSIONS,
   },
   {
     title: "Employees",
@@ -43,11 +42,23 @@ const navItems = [
     // Any one of these is enough to see the nav item at all.
     anyPermission: USER_VIEW_PERMISSIONS,
   },
+  {
+    title: "Clients",
+    url: "/dashboard/clients",
+    icon: ContactIcon,
+    anyPermission: [CLIENT_PERMISSIONS.CLIENTS_READ],
+  },
+  {
+    title: "Categories",
+    url: "/dashboard/categories",
+    icon: FolderTreeIcon,
+    anyPermission: [CATEGORY_PERMISSIONS.CATEGORIES_READ],
+  },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
-  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const hasPermission = useHasPermission();
   const visibleNavItems = navItems.filter(
     (item) => !item.anyPermission || item.anyPermission.some((key) => hasPermission(key))
   );
