@@ -7,5 +7,6 @@ export * from "./hooks/use-create-event";
 export * from "./hooks/use-update-event";
 export * from "./hooks/use-delete-event";
 export * from "./components/event-table";
+export * from "./components/all-events-table";
 export * from "./components/event-form-dialog";
 export * from "./components/delete-event-dialog";

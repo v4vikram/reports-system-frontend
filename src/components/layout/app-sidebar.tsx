@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarIcon,
   ContactIcon,
   FileTextIcon,
   FolderTreeIcon,
@@ -61,6 +62,13 @@ const navItems = [
     url: "/dashboard/categories",
     icon: FolderTreeIcon,
     anyPermission: [CATEGORY_PERMISSIONS.CATEGORIES_READ],
+  },
+  {
+    title: "Events",
+    url: "/dashboard/events",
+    icon: CalendarIcon,
+    // Events have no permission keys of their own — same gate as Clients.
+    anyPermission: [CLIENT_PERMISSIONS.CLIENTS_READ],
   },
   {
     title: "Reports",

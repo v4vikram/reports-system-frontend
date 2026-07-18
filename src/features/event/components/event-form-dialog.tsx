@@ -36,7 +36,7 @@ interface EventFormDialogProps {
 export function EventFormDialog({ open, onOpenChange, clientId, event }: EventFormDialogProps) {
   const isEditing = !!event;
   const createEvent = useCreateEvent(clientId);
-  const updateEvent = useUpdateEvent(clientId);
+  const updateEvent = useUpdateEvent();
   const isPending = createEvent.isPending || updateEvent.isPending;
 
   const form = useForm<EventFormValues>({

@@ -216,7 +216,14 @@ export function ClientForm({
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Unassigned" />
+                      {/* Base UI's SelectValue only auto-resolves a label once the
+                          item list has mounted at least once; supplying children
+                          explicitly avoids ever showing the raw stored id. */}
+                      <SelectValue>
+                        {(value: string | null) =>
+                          value ? (employees?.find((e) => e.id === value)?.name ?? value) : "Unassigned"
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -243,7 +250,16 @@ export function ClientForm({
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="No portal access" />
+                      <SelectValue>
+                        {(value: string | null) =>
+                          value
+                            ? (() => {
+                                const match = portalCandidates?.find((e) => e.id === value);
+                                return match ? `${match.name} (${match.email})` : value;
+                              })()
+                            : "No portal access"
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>

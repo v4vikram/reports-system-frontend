@@ -101,7 +101,14 @@ export function ReportFormDialog({ open, onOpenChange, eventId, report }: Report
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a category" />
+                        {/* See client-form-dialog.tsx for why this needs an
+                            explicit children resolver rather than relying on
+                            Base UI's SelectValue auto-resolution. */}
+                        <SelectValue>
+                          {(value: string) =>
+                            categories?.find((c) => c.id === value)?.name ?? "Select a category"
+                          }
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

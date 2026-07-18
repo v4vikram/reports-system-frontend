@@ -16,12 +16,11 @@ import type { Event } from "../types";
 interface DeleteEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  clientId: string;
   event: Event | null;
 }
 
-export function DeleteEventDialog({ open, onOpenChange, clientId, event }: DeleteEventDialogProps) {
-  const deleteEvent = useDeleteEvent(clientId);
+export function DeleteEventDialog({ open, onOpenChange, event }: DeleteEventDialogProps) {
+  const deleteEvent = useDeleteEvent();
 
   function handleConfirm() {
     if (!event) return;

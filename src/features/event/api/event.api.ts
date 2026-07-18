@@ -3,7 +3,9 @@ import type { Event } from "../types";
 import type { EventFormValues } from "../validation";
 
 export const eventApi = {
-  list: (clientId: string) => apiClient.get<Event[]>("/api/events", { params: { clientId } }),
+  // clientId omitted lists events across every client the actor can see.
+  list: (clientId?: string) =>
+    apiClient.get<Event[]>("/api/events", { params: clientId ? { clientId } : undefined }),
   getById: (id: string) => apiClient.get<Event>(`/api/events/${id}`),
   create: (clientId: string, input: EventFormValues) =>
     apiClient.post<Event>("/api/events", { ...input, clientId }),

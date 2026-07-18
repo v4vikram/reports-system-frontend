@@ -93,7 +93,6 @@ export function EventTable({ clientId, events, canUpdate, canDelete }: EventTabl
       <DeleteEventDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        clientId={clientId}
         event={deleteTarget}
       />
     </>

@@ -116,7 +116,17 @@ export function CategoryFormDialog({
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="No parent (top-level)" />
+                        {/* Base UI's SelectValue only auto-resolves a label once
+                            the item list has mounted at least once; supplying
+                            children explicitly avoids showing the raw stored id
+                            (e.g. when editing with a parent already set). */}
+                        <SelectValue>
+                          {(value: string | null) =>
+                            value
+                              ? (parentOptions.find((o) => o.id === value)?.name ?? value)
+                              : "No parent (top-level)"
+                          }
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
