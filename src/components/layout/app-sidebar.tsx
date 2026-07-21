@@ -31,7 +31,21 @@ import { useHasPermission } from "@/features/auth";
 import { USER_VIEW_PERMISSIONS } from "@/features/employee";
 import { REPORT_VIEW_PERMISSIONS } from "@/features/report";
 
-const navItems = [
+export interface NavItem {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  /** Holding any one of these is enough to see the item; omitted = always visible. */
+  anyPermission?: string[];
+}
+
+// Pure so it's testable without mounting the whole sidebar (which needs a
+// SidebarProvider, next/navigation, and NavUser's own store/router deps).
+export function filterVisibleNavItems(items: NavItem[], hasPermission: (key: string) => boolean): NavItem[] {
+  return items.filter((item) => !item.anyPermission || item.anyPermission.some((key) => hasPermission(key)));
+}
+
+const navItems: NavItem[] = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -81,9 +95,7 @@ const navItems = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const hasPermission = useHasPermission();
-  const visibleNavItems = navItems.filter(
-    (item) => !item.anyPermission || item.anyPermission.some((key) => hasPermission(key))
-  );
+  const visibleNavItems = filterVisibleNavItems(navItems, hasPermission);
 
   return (
     <Sidebar collapsible="icon" {...props}>

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useHasPermission } from "@/features/auth";
+import { PermissionGate, useHasPermission } from "@/features/auth";
 import { PERMISSIONS as CLIENT_PERMISSIONS, useClients } from "@/features/client";
 import { AllEventsTable, useEvents } from "@/features/event";
 
@@ -15,39 +15,30 @@ export default function EventsPage() {
   const { data: events, isLoading } = useEvents(undefined, { enabled: canView });
   const { data: clients } = useClients({ enabled: canView });
 
-  if (!canView) {
-    return (
+  return (
+    <PermissionGate title="Events" canView={canView}>
       <Card>
         <CardHeader>
           <CardTitle>Events</CardTitle>
-          <CardDescription>You don&apos;t have permission to view this page.</CardDescription>
+          <CardDescription>
+            Every event you can see, across all clients. Open one for its reports, or open a client to
+            manage its events.
+          </CardDescription>
         </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="grid gap-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : (events?.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted-foreground">No events found.</p>
+          ) : (
+            <AllEventsTable events={events ?? []} clients={clients} />
+          )}
+        </CardContent>
       </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Events</CardTitle>
-        <CardDescription>
-          Every event you can see, across all clients. Open one for its reports, or open a client to
-          manage its events.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="grid gap-2">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        ) : (events?.length ?? 0) === 0 ? (
-          <p className="text-sm text-muted-foreground">No events found.</p>
-        ) : (
-          <AllEventsTable events={events ?? []} clients={clients} />
-        )}
-      </CardContent>
-    </Card>
+    </PermissionGate>
   );
 }

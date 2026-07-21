@@ -1,10 +1,13 @@
-// Must match backend/src/constants/permissions.ts — manually-synced contract,
-// same pattern as the auth feature's cookie name constants.
+// Sourced from the generated catalog (backend/src/constants/permissions.ts,
+// via `npm run sync:permissions`) instead of re-declared string literals, so
+// a renamed/removed backend key fails `tsc` here instead of silently going stale.
+import { PERMISSIONS as ALL } from "@/lib/generated/permissions";
+
 export const PERMISSIONS = {
-  USERS_CREATE: "users:create",
-  USERS_READ: "users:read",
-  USERS_UPDATE: "users:update",
-  USERS_DELETE: "users:delete",
+  USERS_CREATE: ALL.USERS_CREATE,
+  USERS_READ: ALL.USERS_READ,
+  USERS_UPDATE: ALL.USERS_UPDATE,
+  USERS_DELETE: ALL.USERS_DELETE,
 } as const;
 
 // Holding any of these is enough to view the employee directory.

@@ -11,3 +11,4 @@ export * from "./hooks/use-logout";
 export * from "./hooks/use-forgot-password";
 export * from "./hooks/use-reset-password";
 export * from "./components/session-bootstrap";
+export * from "./components/permission-gate";

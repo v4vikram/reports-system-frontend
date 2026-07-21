@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useHasPermission } from "@/features/auth";
+import { PermissionGate, useHasPermission } from "@/features/auth";
 import {
   buildCategoryTree,
   CategoryFormDialog,
@@ -46,63 +46,54 @@ export default function CategoriesPage() {
 
   const tree = categories ? buildCategoryTree(categories) : [];
 
-  if (!canView) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Categories</CardTitle>
-          <CardDescription>You don&apos;t have permission to view this page.</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   return (
-    <div className="grid gap-4">
-      <Card>
-        <CardHeader className="flex flex-row items-start justify-between">
-          <div>
-            <CardTitle>Categories</CardTitle>
-            <CardDescription>Organize content into nested categories.</CardDescription>
-          </div>
-          {canManage && (
-            <Button size="sm" onClick={openCreate}>
-              <PlusIcon /> New category
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="grid gap-2">
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-6 w-1/3" />
-              <Skeleton className="h-6 w-2/5" />
+    <PermissionGate title="Categories" canView={canView}>
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-start justify-between">
+            <div>
+              <CardTitle>Categories</CardTitle>
+              <CardDescription>Organize content into nested categories.</CardDescription>
             </div>
-          ) : (
-            <CategoryTree
-              nodes={tree}
-              categories={categories ?? []}
-              onAddChild={openAddChild}
-              onEdit={openEdit}
-              onDelete={setDeletingCategory}
-            />
-          )}
-        </CardContent>
-      </Card>
+            {canManage && (
+              <Button size="sm" onClick={openCreate}>
+                <PlusIcon /> New category
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="grid gap-2">
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-6 w-1/3" />
+                <Skeleton className="h-6 w-2/5" />
+              </div>
+            ) : (
+              <CategoryTree
+                nodes={tree}
+                categories={categories ?? []}
+                onAddChild={openAddChild}
+                onEdit={openEdit}
+                onDelete={setDeletingCategory}
+              />
+            )}
+          </CardContent>
+        </Card>
 
-      <CategoryFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        categories={categories ?? []}
-        category={editingCategory}
-        defaultParentId={defaultParentId}
-      />
+        <CategoryFormDialog
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          categories={categories ?? []}
+          category={editingCategory}
+          defaultParentId={defaultParentId}
+        />
 
-      <DeleteCategoryDialog
-        open={!!deletingCategory}
-        onOpenChange={(open) => !open && setDeletingCategory(null)}
-        category={deletingCategory}
-      />
-    </div>
+        <DeleteCategoryDialog
+          open={!!deletingCategory}
+          onOpenChange={(open) => !open && setDeletingCategory(null)}
+          category={deletingCategory}
+        />
+      </div>
+    </PermissionGate>
   );
 }

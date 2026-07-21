@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useHasPermission } from "@/features/auth";
+import { PermissionGate, useHasPermission } from "@/features/auth";
 import { PERMISSIONS as CATEGORY_PERMISSIONS, useCategories } from "@/features/category";
 import { useClients } from "@/features/client";
 import {
@@ -26,44 +26,35 @@ export default function ReportsPage() {
   const { data: categories } = useCategories({ enabled: canViewCategories });
   const { data: clients } = useClients({ enabled: canView });
 
-  if (!canView) {
-    return (
+  return (
+    <PermissionGate title="Reports" canView={canView}>
       <Card>
         <CardHeader>
           <CardTitle>Reports</CardTitle>
-          <CardDescription>You don&apos;t have permission to view this page.</CardDescription>
+          <CardDescription>
+            Every report you can see, across all clients. Open a client to file a new one.
+          </CardDescription>
         </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="grid gap-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : (reports?.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted-foreground">No reports found.</p>
+          ) : (
+            <ReportTable
+              reports={reports ?? []}
+              categories={categories}
+              clients={clients}
+              canUpdate={canUpdate}
+              canDelete={canDelete}
+            />
+          )}
+        </CardContent>
       </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Reports</CardTitle>
-        <CardDescription>
-          Every report you can see, across all clients. Open a client to file a new one.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="grid gap-2">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        ) : (reports?.length ?? 0) === 0 ? (
-          <p className="text-sm text-muted-foreground">No reports found.</p>
-        ) : (
-          <ReportTable
-            reports={reports ?? []}
-            categories={categories}
-            clients={clients}
-            canUpdate={canUpdate}
-            canDelete={canDelete}
-          />
-        )}
-      </CardContent>
-    </Card>
+    </PermissionGate>
   );
 }
