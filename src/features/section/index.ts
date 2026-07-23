@@ -7,4 +7,5 @@ export * from "./hooks/use-update-section";
 export * from "./hooks/use-delete-section";
 export * from "./components/section-form-dialog";
 export * from "./components/delete-section-dialog";
+export * from "./components/section-card";
 export * from "./components/section-list";

@@ -1,14 +1,10 @@
 "use client";
 
+import { ImagePlusIcon, Loader2Icon } from "lucide-react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env";
 import { useUploadImage } from "../hooks/use-upload-image";
-
-interface ImageUploadFieldProps {
-  value: string | null;
-  onChange: (url: string | null) => void;
-}
 
 // Uploaded images are returned as a path (e.g. "/uploads/xyz.png") relative
 // to the backend origin, not the frontend's — resolve it for display here so
@@ -17,7 +13,14 @@ function resolveImageUrl(url: string) {
   return url.startsWith("/") ? `${env.NEXT_PUBLIC_API_URL}${url}` : url;
 }
 
-export function ImageUploadField({ value, onChange }: ImageUploadFieldProps) {
+interface ImageUploadFieldProps {
+  value: string | null;
+  onChange: (url: string | null) => void;
+  /** Icon-only trigger with no inline preview/remove — for tight spaces like a grid cell. */
+  compact?: boolean;
+}
+
+export function ImageUploadField({ value, onChange, compact }: ImageUploadFieldProps) {
   const uploadImage = useUploadImage();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -26,6 +29,34 @@ export function ImageUploadField({ value, onChange }: ImageUploadFieldProps) {
     if (!file) return;
     uploadImage.mutate(file, { onSuccess: (result) => onChange(result.url) });
     e.target.value = "";
+  }
+
+  const fileInput = (
+    <input
+      ref={inputRef}
+      type="file"
+      accept="image/png,image/jpeg,image/webp,image/gif"
+      className="hidden"
+      onChange={handleFileChange}
+    />
+  );
+
+  if (compact) {
+    return (
+      <>
+        {fileInput}
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          disabled={uploadImage.isPending}
+          onClick={() => inputRef.current?.click()}
+          aria-label="Upload image"
+        >
+          {uploadImage.isPending ? <Loader2Icon className="animate-spin" /> : <ImagePlusIcon />}
+        </Button>
+      </>
+    );
   }
 
   return (
@@ -38,13 +69,7 @@ export function ImageUploadField({ value, onChange }: ImageUploadFieldProps) {
           className="size-10 rounded object-cover ring-1 ring-foreground/10"
         />
       )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      {fileInput}
       <Button
         type="button"
         variant="outline"

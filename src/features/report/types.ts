@@ -1,3 +1,8 @@
+export interface CoverPage {
+  content: string | null;
+  image: string | null;
+}
+
 export interface Report {
   id: string;
   title: string;
@@ -5,6 +10,7 @@ export interface Report {
   clientId: string;
   eventId: string;
   categoryId: string;
+  coverPages: CoverPage[];
   createdAt: string;
   updatedAt: string;
   // Resolved by the backend — a portal-linked client can see who worked on

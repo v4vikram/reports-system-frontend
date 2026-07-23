@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,14 @@ export function ReportTable({ reports, categories, clients, canUpdate, canDelete
         <TableBody>
           {reports.map((report) => (
             <TableRow key={report.id}>
-              <TableCell className="font-medium">{report.title}</TableCell>
+              <TableCell className="font-medium">
+                <Link
+                  href={`/dashboard/clients/${report.clientId}/events/${report.eventId}/reports/${report.id}`}
+                  className="hover:underline"
+                >
+                  {report.title}
+                </Link>
+              </TableCell>
               <TableCell className="text-muted-foreground">{categoryName(report)}</TableCell>
               {clients && <TableCell className="text-muted-foreground">{clientName(report)}</TableCell>}
               <TableCell>

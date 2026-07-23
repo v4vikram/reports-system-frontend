@@ -3,9 +3,9 @@
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CoverageTableCard } from "./coverage-table-card";
 import { useCoverageTables } from "../hooks/use-coverage-tables";
 import { useCreateCoverageTable } from "../hooks/use-create-coverage-table";
+import { TableCard } from "./table-card";
 
 interface CoverageTablesListProps {
   sectionId: string;
@@ -30,14 +30,14 @@ export function CoverageTablesList({ sectionId, canEdit, canDelete }: CoverageTa
     );
   }
 
+  const sorted = [...(tables ?? [])].sort((a, b) => a.order - b.order);
+
   return (
     <div className="grid gap-3">
-      {(tables?.length ?? 0) === 0 ? (
+      {sorted.length === 0 ? (
         <p className="text-sm text-muted-foreground">No tables in this section yet.</p>
       ) : (
-        tables?.map((table) => (
-          <CoverageTableCard key={table.id} table={table} canEdit={canEdit} canDelete={canDelete} />
-        ))
+        sorted.map((table) => <TableCard key={table.id} table={table} canEdit={canEdit} canDelete={canDelete} />)
       )}
       {canEdit && (
         <Button variant="outline" size="sm" className="w-fit" disabled={createTable.isPending} onClick={addTable}>
